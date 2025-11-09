@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Local environment files
+.env
+.env.local
+.env.*.local
+
+# Editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Optional: lock files (if you switch between package managers often)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Local testing / coverage
+coverage/
+*.lcov
+
+# Cache
+.cache/
+vite.config.ts.timestamp-*
+
