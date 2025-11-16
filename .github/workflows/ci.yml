@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-test:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -38,4 +38,6 @@ jobs:
       - name: Run frontend tests
         working-directory: ./frontend
         run: npm run test
+  
+
 
