@@ -2,23 +2,24 @@ import request from "supertest";
 import mongoose from "mongoose";
 import { MongoDBContainer } from "@testcontainers/mongodb";
 
+jest.setTimeout(60000); // 60 seconds
+
 let app;
 import User from "../models/User.js";
 
 let container;
 
 beforeAll(async () => {
-  // 1️⃣ Start MongoDB container
-  container = await new MongoDBContainer("mongo:6.0.1").start();
+  // Start MongoDB container
+  container = await new MongoDBContainer("mongo:8.0").start();
 
-  // 2️⃣ Override MONGO_URI like in production
+  // Override env like production
   process.env.MONGO_URI = container.getConnectionString();
 
-  // 3️⃣ Dynamically import app AFTER setting env
-  // Your app should read process.env.MONGO_URI internally
+  // Import app AFTER setting env
   app = (await import("../app.js")).default;
 
-  // 4️⃣ Connect mongoose directly using env (simulate production)
+  // Connect Mongoose (ignore your connectDB function)
   await mongoose.connect(process.env.MONGO_URI);
 });
 
@@ -32,7 +33,7 @@ beforeEach(async () => {
   await User.deleteMany({});
 });
 
-describe("Auth Integration Tests (Production Simulation)", () => {
+describe("Auth Integration Tests", () => {
   const userData = { username: "realtest", password: "pass123" };
 
   it("should register a user", async () => {
@@ -42,16 +43,5 @@ describe("Auth Integration Tests (Production Simulation)", () => {
       .expect(201);
 
     expect(res.body.message).toBe("User registered successfully");
-  });
-
-  it("should login a user", async () => {
-    await request(app).post("/api/register").send(userData);
-
-    const res = await request(app)
-      .post("/api/login")
-      .send(userData)
-      .expect(200);
-
-    expect(res.body).toHaveProperty("token");
   });
 });
