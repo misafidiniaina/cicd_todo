@@ -23,7 +23,11 @@ beforeAll(async () => {
     container = await new MongoDBContainer("mongo:7.0").start();
     console.log("✅ Container started");
     
-    const mongoUri = container.getConnectionString();
+    // Get host and port separately to build a proper connection string
+    const host = container.getHost();
+    const port = container.getMappedPort(27017);
+    const mongoUri = `mongodb://${host}:${port}/testdb?directConnection=true`;
+    
     console.log("📡 MongoDB URI:", mongoUri);
     
     // Set the MONGO_URI env var
@@ -40,6 +44,7 @@ beforeAll(async () => {
     
   } catch (error) {
     console.error("❌ Setup failed:", error.message);
+    console.error("Full error:", error);
     throw error;
   }
 }, 60000); // 3 minutes
@@ -59,7 +64,7 @@ afterAll(async () => {
   } catch (error) {
     console.error("❌ Cleanup error:", error);
   }
-}, 60000);
+}, 30000);
 
 beforeEach(async () => {
   await User.deleteMany({});
