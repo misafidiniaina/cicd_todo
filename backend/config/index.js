@@ -11,12 +11,6 @@ export const config = {
 };
 
 export const connectDB = async () => {
-  // Skip connection in test environment if already connected
-  if (process.env.NODE_ENV === "test" && mongoose.connection.readyState !== 0) {
-    console.log("✅ MongoDB already connected (test mode)");
-    return;
-  }
-
   try {
     await mongoose.connect(config.mongoUri);
     console.log("✅ MongoDB connected successfully");
