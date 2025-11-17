@@ -7,39 +7,59 @@ let app;
 let container;
 
 beforeAll(async () => {
+  console.log("🐳 Starting MongoDB container...");
+  
+  // Set test environment FIRST
+  process.env.NODE_ENV = "test";
+  
   // Disconnect any existing mongoose connection
   if (mongoose.connection.readyState !== 0) {
+    console.log("🔌 Disconnecting existing connection...");
     await mongoose.disconnect();
   }
 
-  // Start MongoDB container
-  container = await new MongoDBContainer("mongo:8.0").start();
-  
-  // Set env variables
-  process.env.MONGO_URI = container.getConnectionString();
-  process.env.NODE_ENV = "test";
-  
-  // Connect to test database
-  await mongoose.connect(process.env.MONGO_URI);
-  
-  // Import app AFTER connection
-  const appModule = await import("../app.js");
-  app = appModule.default;
-}, 60000);
+  try {
+    console.log("📦 Creating container (mongo:7.0)...");
+    container = await new MongoDBContainer("mongo:7.0").start();
+    console.log("✅ Container started");
+    
+    const mongoUri = container.getConnectionString();
+    console.log("📡 MongoDB URI:", mongoUri);
+    
+    // Set the MONGO_URI env var
+    process.env.MONGO_URI = mongoUri;
+    
+    console.log("🔗 Connecting mongoose...");
+    await mongoose.connect(mongoUri);
+    console.log("✅ Mongoose connected");
+    
+    console.log("📦 Importing app...");
+    const appModule = await import("../app.js");
+    app = appModule.default;
+    console.log("✅ App imported");
+    
+  } catch (error) {
+    console.error("❌ Setup failed:", error.message);
+    throw error;
+  }
+}, 60000); // 3 minutes
 
 afterAll(async () => {
+  console.log("🧹 Starting cleanup...");
   try {
     if (mongoose.connection.readyState !== 0) {
       await mongoose.connection.dropDatabase();
       await mongoose.connection.close();
+      console.log("✅ Database dropped and connection closed");
     }
     if (container) {
       await container.stop();
+      console.log("✅ Container stopped");
     }
   } catch (error) {
-    console.error("Cleanup error:", error);
+    console.error("❌ Cleanup error:", error);
   }
-}, 30000);
+}, 60000);
 
 beforeEach(async () => {
   await User.deleteMany({});

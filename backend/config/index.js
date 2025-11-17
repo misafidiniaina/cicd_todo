@@ -11,16 +11,25 @@ export const config = {
 };
 
 export const connectDB = async () => {
+  // Skip connection in test environment if already connected
+  if (process.env.NODE_ENV === "test" && mongoose.connection.readyState !== 0) {
+    console.log("✅ MongoDB already connected (test mode)");
+    return;
+  }
+
   try {
-    await mongoose.connect(config.mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(config.mongoUri);
     console.log("✅ MongoDB connected successfully");
   } catch (err) {
     console.error("❌ MongoDB connection failed:", err.message);
-    console.error("Stack:", err.stack);
-    console.error("Mongo URI:", config.mongoUri);
-    process.exit(1);
+    
+    // Don't exit in test environment
+    if (process.env.NODE_ENV !== "test") {
+      console.error("Stack:", err.stack);
+      console.error("Mongo URI:", config.mongoUri);
+      process.exit(1);
+    } else {
+      throw err; // In tests, throw instead of exit
+    }
   }
 };
