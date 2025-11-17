@@ -9,7 +9,7 @@ let container;
 
 beforeAll(async () => {
   // 1️⃣ Start MongoDB container
-  container = await new MongoDBContainer().start();
+  container = await new MongoDBContainer("mongo:6.0.1").start();
 
   // 2️⃣ Override MONGO_URI like in production
   process.env.MONGO_URI = container.getConnectionString();
