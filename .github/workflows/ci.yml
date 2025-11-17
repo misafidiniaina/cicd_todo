@@ -10,8 +10,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-
     steps:
+      # -------------------------
+      # CHECKOUT CODE
+      # -------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -20,7 +22,9 @@ jobs:
         with:
           node-version: 20
 
-      # backend
+      # -------------------------
+      # BACKEND
+      # -------------------------
       - name: Install backend dependencies
         working-directory: ./backend
         run: npm install
@@ -29,7 +33,9 @@ jobs:
         working-directory: ./backend
         run: npm test
 
-        # frontend
+      # -------------------------
+      # FRONTEND
+      # -------------------------
       - name: Install frontend dependencies
         working-directory: ./frontend
         run: npm install
@@ -37,3 +43,43 @@ jobs:
       - name: Run frontend tests
         working-directory: ./frontend
         run: npm run test
+
+  # =======================================
+  #          DOCKER BUILD & PUSH
+  # =======================================
+  docker:
+    needs: test   # Only run if tests pass
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/todo-backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/todo-backend:${{ github.sha }}
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/todo-frontend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/todo-frontend:${{ github.sha }}

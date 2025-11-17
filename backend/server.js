@@ -5,7 +5,7 @@ const PORT = config.port || 3000;
 
 const startServer = async () => {
   try {
-    // await connectDB(); // <- make sure Mongoose connects first
+    await connectDB(); // <- make sure Mongoose connects first
     app.listen(PORT, () => {
       console.log(`✅ Server running on port ${PORT}`);
     });
